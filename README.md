@@ -24,3 +24,9 @@ This script was intended to quickly deploy changes to heroku when using the git 
 
 Small script to quickly remove all changes from a file and restore it to the last commit. This includes if the files are
 staged or not.
+
+## git-rebase-all
+
+Script that will pull in the latest copy of `origin/master`, and then rebase all other local branches around
+origin/master. It will abort a rebase if it encounters merge conflicts. This is very useful to rebase all branches upon
+a merge occuring to the origin/master branch.
