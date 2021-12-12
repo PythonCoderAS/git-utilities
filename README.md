@@ -19,3 +19,8 @@ Small script that:
 - Pushes the new commit
 
 This script was intended to quickly deploy changes to heroku when using the git repo deploy method.
+
+## git-full-restore
+
+Small script to quickly remove all changes from a file and restore it to the last commit. This includes if the files are
+staged or not.
