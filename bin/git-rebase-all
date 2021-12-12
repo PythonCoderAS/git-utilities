@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+TMPDIR=$(mktemp -d -t "git-rebase-all")
+log="branchdata.log"
+
+progress() {
+    local w=120 p=$1;  shift
+    # create a string of spaces, then change them to dots
+    printf -v dots "%*s" "$(( $p*$w/100 ))" ""; dots=${dots// /.};
+    # print those dots on a fixed-width space plus the percentage etc. 
+    printf "\r\e[K|%-*s| %3d %% %s" "$w" "$dots" "$p" "$*"; 
+}
+
+
+on_fail() {
+	local branch="$1"
+	local branch_log="$TMPDIR/branch-$branch.log"
+	echo "Failed to rebase $branch" >> "$TMPDIR/$log"
+	git rebase --abort >> "$branch_log" 2>&1
+}
+
+on_success() {
+	local branch="$1"
+	local branch_log="$TMPDIR/branch-$branch.log"
+	echo "Successfully rebased branch $branch" >> "$TMPDIR/$log"
+	git push --force >> "$branch_log" 2>&1
+}
+
+update_counter() {
+    counter="$(( $counter+${1:-1} ))"
+	progress $(( ($counter*100)/${branch_count:-$counter} ))
+}
+
+{
+    branches="$(git branch | sed "s/\*//g" | sed "s/ //g")"
+    branch_count="$(echo ${branches} | wc -w| tr -d '\040\011\012\015')"
+}
+
+git cleanbranches
+
+for branch in ${branches};
+do {
+    branch_log="$TMPDIR/branch-$branch.log"
+	echo Processing branch ${branch} >> ${branch_log} 2>&1
+    git checkout ${branch} >> ${branch_log} 2>&1
+    if git rebase upstream/master >> ${branch_log} 2>&1
+    then {
+        on_success ${branch}
+    }
+    else {
+        on_fail ${branch}
+    }
+    fi
+    update_counter
+}
+done
+
+git checkout master >> /dev/null 2>& 1
+{
+    echo
+    echo "Printing log"
+    cat "$TMPDIR/$log"
+    echo
+    echo "View rest of logs at $TMPDIR"
+    ls -FGl $TMPDIR
+}
+exit 0

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo Switching to master
+git checkout master || git checkout main
+
+echo Pulling in changes
+git pull --all --prune
+
+echo Forcing master to resemble upstream
+git reset --hard upstream/master || git reset --hard upstream/main
+
+echo Force pushing update
+git push --force
+
+echo Removing non-origin local branches...
+git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs git branch -D
+git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep upstream) | awk '{print $1}' | xargs git branch -D
+
+echo Complete, exiting...

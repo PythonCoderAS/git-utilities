@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if test -z "$1"
+then
+ msg="Update"
+else
+ msg="$1"
+fi
+
+git add .
+git commit -a -m "$msg"
+git push
