@@ -5,5 +5,6 @@ then
     echo File paths not specified
     exit 1
 else
-    git restore --staged $@ && git restore $@
+    git restore --staged $@
+    git restore $@
 fi
